@@ -36,7 +36,6 @@ func (controller PaymentController) Transfer(c *fiber.Ctx) error {
 			"details": err.Error(),
 		})
 	}
-	println("masuk control")
 	paymentResponse, err := controller.PaymentService.Create(context.Background(), request)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
