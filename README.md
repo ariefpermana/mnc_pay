@@ -2,7 +2,7 @@
 
 # MNC Payment API
 
-## 🚀 Setup Project
+##  📝 Setup Project
 
 Berikut adalah langkah-langkah untuk menjalankan proyek ini di environment local.
 
@@ -15,6 +15,7 @@ Untuk membuat struktur database secara otomatis, ikuti langkah-langkah berikut:
 
 ## ⚙️ 2. Setup `.env`
 
+
 Update file `.env` di root project dan isi dengan konfigurasi database local seperti contoh berikut:
 
 ```env
@@ -23,8 +24,9 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=password
 DB_NAME=mnc_payment
+```
 
-## 3. running services
+## 🏃‍♂️‍➡️ 3. running services
 Jalankan command di terminal:
 
     ```bash
@@ -36,5 +38,5 @@ Jalankan command di terminal:
 
 
 ---
-## 4. Testing API
+## 🚀 4. Testing API
 - Import collection `mnc_pay.postman_collection.json` di Postman untuk menguji endpoint API dan melakukan test hit pada service.
