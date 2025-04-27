@@ -24,27 +24,33 @@ func (s *userServiceImpl) Login(ctx context.Context, request model.UserRequest) 
 	// NewLogger().Info("from repo request", request)
 	status := "SUCCESS"
 
-	user, found, err := s.UserRepository.FindByID(ctx, request) // asumsi: return (user model.UserRequest, found bool)
+	user, found, err := s.UserRepository.FindByUsername(ctx, request) // asumsi: return (user model.UserRequest, found bool)
 	if !found {
-		response := errors.New("user not found or invalid credentials")
+		msg := "user not found or invalid credentials"
+		response := errors.New(msg)
 		status = "FAILED"
-		go s.logService.LogActivity(ctx, user.Id, "LOGIN", request, response, status) // asynchronous logging
+		errMsg := handler.LogRespErr(msg)
+		go s.logService.LogActivity(ctx, user.Id, "LOGIN", request, errMsg, status) // asynchronous logging
 		return nil, response
 	}
 
 	token, err := auth.GenerateToken(user)
 	if err != nil {
-		response := errors.New("failed to generate token")
+		msg := "failed to generate token"
+		response := errors.New(msg)
 		status = "FAILED"
-		go s.logService.LogActivity(ctx, user.Id, "LOGIN", request, response, status) // asynchronous logging
+		errMsg := handler.LogRespErr(msg)
+		go s.logService.LogActivity(ctx, user.Id, "LOGIN", request, errMsg, status) // asynchronous logging
 		return nil, response
 	}
 
 	err = s.UserRepository.Login(ctx, user.Id, token)
 	if err != nil {
-		response := errors.New("failed to Login")
+		msg := "failed to Login"
+		response := errors.New(msg)
 		status = "FAILED"
-		go s.logService.LogActivity(ctx, user.Id, "LOGIN", request, response, status) // asynchronous logging
+		errMsg := handler.LogRespErr(msg)
+		go s.logService.LogActivity(ctx, user.Id, "LOGIN", request, errMsg, status) // asynchronous logging
 		return nil, response
 	}
 
@@ -65,18 +71,22 @@ func (s *userServiceImpl) Create(ctx context.Context, request model.UserRequest)
 
 	exists, err := s.UserRepository.FindUserExist(ctx, request.Username)
 	if err != nil {
+		println("masuk ERROR dari FindUserExist")
 		return model.UserCreateResp{}, err
 	}
 	if exists {
+		println("masuk USERNAME SUDAH ADA")
 		return model.UserCreateResp{}, errors.New("username already exists")
 	}
 
 	hashedPassword, err := handler.HashPassword(request.Password)
 	if err != nil {
 		status = "FAILED"
-		response := errors.New("failed to generate password")
-		go s.logService.LogActivity(ctx, 0, "CREATE USER", request, response, status) // asynchronous logging
-		return model.UserCreateResp{}, err
+		msg := "failed to generate password"
+		response := errors.New(msg)
+		errMsg := handler.LogRespErr(msg)
+		go s.logService.LogActivity(ctx, 0, "CREATE USER", request, errMsg, status) // asynchronous logging
+		return model.UserCreateResp{}, response
 	}
 
 	user := model.UserRequest{
@@ -89,9 +99,11 @@ func (s *userServiceImpl) Create(ctx context.Context, request model.UserRequest)
 	savedUser, err := s.UserRepository.Create(ctx, user)
 	if err != nil {
 		status = "FAILED"
-		response := errors.New("failed to create user")
-		go s.logService.LogActivity(ctx, savedUser.Id, "CREATE USER", request, response, status)
-		return model.UserCreateResp{}, err
+		msg := "failed to create user"
+		response := errors.New(msg)
+		errMsg := handler.LogRespErr(msg)
+		go s.logService.LogActivity(ctx, savedUser.Id, "CREATE USER", request, errMsg, status)
+		return model.UserCreateResp{}, response
 	}
 
 	// Response
@@ -106,26 +118,28 @@ func (s *userServiceImpl) Create(ctx context.Context, request model.UserRequest)
 }
 
 func (s *userServiceImpl) Logout(ctx context.Context, request model.UserRequest) (model.UserLogoutResp, error) {
-	// Misalnya kita hanya ingin update token menjadi kosong atau ubah status login
-	err := s.UserRepository.ClearUserSession(ctx, 0)
-	if err != nil {
-		return model.UserLogoutResp{}, err
-	}
 	status := "SUCCESS"
-	// Misal ambil ulang data user setelah logout
-	user, found, err := s.UserRepository.FindByID(ctx, request)
+	// ambil ulang data user setelah logout
+	user, found, err := s.UserRepository.FindByUsername(ctx, request)
 	if !found {
 		status = "FAILED"
-		response := errors.New("user not found")
-		go s.logService.LogActivity(ctx, user.Id, "LOGOUT", request, response, status) // asynchronous logging
+		msg := "user not found"
+		response := errors.New(msg)
+		errMsg := handler.LogRespErr(msg)
+		go s.logService.LogActivity(ctx, 0, "LOGOUT", request, errMsg, status) // asynchronous logging
 
+		return model.UserLogoutResp{}, response
+	}
+
+	err = s.UserRepository.ClearUserSession(ctx, request.Username)
+	if err != nil {
 		return model.UserLogoutResp{}, err
 	}
 
 	response := model.UserLogoutResp{
 		Id:       user.Id,
 		Username: user.Username,
-		IsLogin:  user.IsLogin,
+		IsLogin:  0,
 	}
 
 	go s.logService.LogActivity(ctx, user.Id, "LOGOUT", request, response, status) // asynchronous logging

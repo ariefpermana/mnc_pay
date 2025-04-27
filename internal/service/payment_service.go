@@ -6,5 +6,5 @@ import (
 )
 
 type PaymentService interface {
-	Create(ctx context.Context, request model.PaymentRequest) ([]model.PaymentResp, error)
+	Create(ctx context.Context, request model.PaymentRequest) (model.PaymentResp, error)
 }

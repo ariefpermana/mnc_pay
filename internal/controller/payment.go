@@ -5,45 +5,46 @@ import (
 	"mnc/config"
 	"mnc/internal/middleware"
 	"mnc/internal/model"
+	"mnc/internal/repository"
 	"mnc/internal/service"
-	"mnc/msg"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func NewPaymentController(paymentService *service.PaymentService, logger service.LogService, config config.Config) *PaymentController {
-	return &PaymentController{PaymentService: *paymentService, LogService: logger, Config: config}
+func NewPaymentController(paymentService *service.PaymentService, logger service.LogService, config config.Config, userRepository repository.UserRepository) *PaymentController {
+	return &PaymentController{PaymentService: *paymentService, LogService: logger, Config: config, UserRepository: userRepository}
 }
 
 type PaymentController struct {
 	service.PaymentService
 	service.LogService
 	config.Config
+	repository.UserRepository
 }
 
 func (controller PaymentController) PaymentRoute(app *fiber.App) {
-	app.Post("/v1/api/transfer", middleware.ValidateAPIKey, middleware.AuthenticateJWT("ROLE_USER", controller.Config), controller.Transfer)
+	app.Post("/v1/api/transfer", middleware.ValidateAPIKey, middleware.AuthenticateJWT(controller.Config, controller.UserRepository), controller.Transfer)
 }
 
 func (controller PaymentController) Transfer(c *fiber.Ctx) error {
 	var request model.PaymentRequest
 	err := c.BodyParser(&request)
-
-	// Ambil token dari header Authorization
-	token := c.Get("Authorization")
-
-	// Tambahkan token ke context
-	ctx := context.WithValue(context.Background(), "authToken", token)
-
-	paymentResponse, err := controller.PaymentService.Create(ctx, request)
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   true,
+			"message": "Invalid request body",
+			"details": err.Error(),
+		})
+	}
+	println("masuk control")
+	paymentResponse, err := controller.PaymentService.Create(context.Background(), request)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error":   true,
-			"message": "Internal server error",
+			"message": err.Error(),
 		})
 	}
 
-	msg.PanicLogging(err)
 	return c.Status(fiber.StatusOK).JSON(model.GeneralResponse{
 		Code:    200,
 		Message: "Success",

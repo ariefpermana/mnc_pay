@@ -3,7 +3,6 @@ package model
 import "time"
 
 type PaymentRequest struct {
-	Id          int    `json:"id"`
 	UserId      int    `json:"user_id"`
 	AccountNo   string `json:"account_no"`
 	AccountName string `json:"account_name"`
@@ -24,7 +23,8 @@ type Payment struct {
 	AccountName string     `gorm:"column:account_name;type:varchar(255)"`
 	Amount      float64    `gorm:"column:amount;type:double"`
 	Merchant    string     `gorm:"column:merchant;type:varchar(255)"`
-	TrxId       string     `gorm:"column:transaction_id;type:varchar(25)"`
+	TrxId       string     `gorm:"column:trx_id;type:varchar(25)"`
+	Status      string     `gorm:"column:status;type:varchar(25)"`
 	CreatedAt   *time.Time `gorm:"column:created_at;type:timestamp;default:CURRENT_TIMESTAMP"`
 	UpdatedAt   *time.Time `gorm:"column:updated_at;type:timestamp;default:CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"`
 }

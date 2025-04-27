@@ -34,3 +34,9 @@ func NewLogger() *logrus.Logger {
 	}
 	return logger
 }
+
+func LogRespErr(msg string) map[string]string {
+	return map[string]string{
+		"error": msg,
+	}
+}

@@ -1,0 +1,168 @@
+{
+	"info": {
+		"_postman_id": "a8007474-b649-4f8c-af54-57cb361dbcd7",
+		"name": "mnc_pay",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "6061536"
+	},
+	"item": [
+		{
+			"name": "payment",
+			"item": [
+				{
+					"name": "transfer",
+					"item": [
+						{
+							"name": "http://localhost:8080/v1/api/transfer",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDYwMzE0MjEsImlkIjoxLCJ1c2VybmFtZSI6InRlc3QifQ.ws3lTG2eU6euvgMxVkV21-Ymo0yiLVEotU9eSolfws4"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-api-key",
+										"value": "36c8e272-dafa-4d68-88c6-bdf854925d77",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"user_id\": 11,\n    \"account_no\": \"1234567890\",\n    \"account_name\": \"John Doe\",\n    \"amount\": \"250000\",\n    \"merchant\": \"Tokopedia\",\n    \"trx_id\": \"TRX123456789\",\n    \"status\": \"PENDING\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8001/v1/api/transfer"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "create",
+					"item": [
+						{
+							"name": "http://localhost:8001/v1/api/create Copy",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "36c8e272-dafa-4d68-88c6-bdf854925d77"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"test\",\r\n    \"password\": \"test123\",\r\n    \"role\": 1,\r\n    \"is_login\": 0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8001/v1/api/create"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "login",
+					"item": [
+						{
+							"name": "http://localhost:8001/v1/api/create",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "36c8e272-dafa-4d68-88c6-bdf854925d77"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"test\",\r\n    \"password\": \"test123\",\r\n    \"role\": 1,\r\n    \"is_login\": 0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8001/v1/api/login"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "logout",
+					"item": [
+						{
+							"name": "http://localhost:8001/v1/api/create",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": {
+										"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDYwMzExMjEsImlkIjoxLCJ1c2VybmFtZSI6InRlc3QifQ.KeVYqRmk48ntLkfDn3BLQEyqoadS2HkwgOvgS3T1D7U"
+									}
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "36c8e272-dafa-4d68-88c6-bdf854925d77"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"test\",\r\n    \"password\": \"test123\",\r\n    \"role\": 1,\r\n    \"is_login\": 0\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:8001/v1/api/logout"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

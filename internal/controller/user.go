@@ -5,25 +5,27 @@ import (
 	"mnc/config"
 	"mnc/internal/middleware"
 	"mnc/internal/model"
+	"mnc/internal/repository"
 	"mnc/internal/service"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func NewUserController(userService *service.UserService, logActivity service.LogService, config config.Config) *UserController {
-	return &UserController{UserService: *userService, LogService: logActivity, Config: config}
+func NewUserController(userService *service.UserService, logActivity service.LogService, config config.Config, userRepo repository.UserRepository) *UserController {
+	return &UserController{UserService: *userService, LogService: logActivity, Config: config, UserRepository: userRepo}
 }
 
 type UserController struct {
 	service.UserService
 	service.LogService
 	config.Config
+	repository.UserRepository
 }
 
 func (controller UserController) UserRoute(app *fiber.App) {
 	app.Post("/v1/api/login", middleware.ValidateAPIKey, controller.Login)
 	app.Post("/v1/api/create", middleware.ValidateAPIKey, controller.Create)
-	app.Post("/v1/api/logout", middleware.ValidateAPIKey, middleware.AuthenticateJWT("ROLE_USER", controller.Config), controller.Logout)
+	app.Post("/v1/api/logout", middleware.ValidateAPIKey, middleware.AuthenticateJWT(controller.Config, controller.UserRepository), controller.Logout)
 }
 
 func (controller UserController) Login(c *fiber.Ctx) error {
@@ -66,7 +68,7 @@ func (controller UserController) Create(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error":   true,
-			"message": "Internal server error",
+			"message": err.Error(),
 		})
 	}
 
@@ -87,7 +89,6 @@ func (controller UserController) Logout(c *fiber.Ctx) error {
 			"details": err.Error(),
 		})
 	}
-
 	userResponse, err := controller.UserService.Logout(context.Background(), request)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

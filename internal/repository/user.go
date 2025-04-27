@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"mnc/internal/model"
 
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -44,7 +44,25 @@ func (r *userRepository) Create(ctx context.Context, req model.UserRequest) (mod
 	return userCreateResp, nil
 }
 
-func (r *userRepository) FindByID(ctx context.Context, request model.UserRequest) (model.User, bool, error) {
+func (r *userRepository) FindByID(ctx context.Context, userId int) (model.User, bool, error) {
+	var user model.User
+	// Find the user by id
+	err := r.db.WithContext(ctx).
+		Table("user").
+		Where("id = ?", userId).
+		First(&user).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.User{}, false, nil
+		}
+		return model.User{}, false, err
+	}
+
+	return user, true, nil
+}
+
+func (r *userRepository) FindByUsername(ctx context.Context, request model.UserRequest) (model.User, bool, error) {
 	var user model.User
 
 	// Find the user by username
@@ -53,18 +71,17 @@ func (r *userRepository) FindByID(ctx context.Context, request model.UserRequest
 		Where("username = ?", request.Username).
 		First(&user).Error
 
+	// Check if the error is related to a non-existing user
 	if err != nil {
-		// Return false if no user is found
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Return false and nil if user is not found
+			return model.User{}, false, nil
+		}
+		// Return the error if it's something other than 'not found'
 		return model.User{}, false, err
 	}
 
-	// Compare the password hash
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password))
-	if err != nil {
-		// Return false if password doesn't match
-		return model.User{}, false, nil
-	}
-
+	// If no error, return the user and true
 	return user, true, nil
 }
 
@@ -76,19 +93,23 @@ func (r *userRepository) FindUserExist(ctx context.Context, username string) (ex
 		First(&user).Error
 
 	if err != nil {
+		fmt.Println("DEBUG: DB Error =", err)
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			fmt.Println("DEBUG: Record not found")
 			return false, nil // tidak ada
 		}
+		fmt.Println("DEBUG: Other error")
+
 		return false, err // error lain
 	}
 
 	return true, nil // ditemukan
 }
 
-func (r *userRepository) ClearUserSession(ctx context.Context, userID int) error {
+func (r *userRepository) ClearUserSession(ctx context.Context, username string) error {
 	return r.db.WithContext(ctx).
 		Table("user").
-		Where("id = ?", userID).
+		Where("username = ?", username).
 		Updates(map[string]interface{}{
 			"token":    nil,
 			"is_login": 0,

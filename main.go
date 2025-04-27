@@ -25,11 +25,11 @@ func main() {
 
 	logService := service.NewLogServiceImp(logRepository)
 	userService := service.NewUserServiceImpl(&userRepository, logService)
-	paymentService := service.NewPaymentServiceImpl(paymentRepository)
+	paymentService := service.NewPaymentServiceImpl(paymentRepository, userRepository, logService)
 
 	//controller
-	userController := controller.NewUserController(&userService, logService, newConfig)
-	paymentController := controller.NewPaymentController(&paymentService, logService, newConfig)
+	userController := controller.NewUserController(&userService, logService, newConfig, userRepository)
+	paymentController := controller.NewPaymentController(&paymentService, logService, newConfig, userRepository)
 
 	//setup fiber
 	app := fiber.New(config.NewFiberConfiguration())

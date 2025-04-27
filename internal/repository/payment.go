@@ -16,17 +16,19 @@ func InitPaymentRepo(db *gorm.DB) PaymentRepository {
 	return &paymentRepository{db: db}
 }
 
-func (r *paymentRepository) Create(ctx context.Context, req model.PaymentRequest) ([]model.PaymentResp, error) {
+func (r *paymentRepository) Create(ctx context.Context, req model.PaymentRequest) (model.PaymentResp, error) {
 	err := r.db.WithContext(ctx).
-		Table("payments").
+		Table("payment").
 		Create(&req).Error
 
 	if err != nil {
-		return nil, err
+		return model.PaymentResp{}, err
 	}
-	return []model.PaymentResp{
-		{
-			TrxId: req.TrxId,
-		},
-	}, nil
+	// Konversi data yang baru di-insert ke dalam format response
+	paymentResp := model.PaymentResp{
+		TrxId: req.TrxId, // Ambil ID yang terisi dari database
+	}
+
+	// Kembalikan response
+	return paymentResp, nil
 }
